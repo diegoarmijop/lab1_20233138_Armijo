@@ -51,4 +51,24 @@
   )
 )
 
+;TDA pixhex-d
+(define pixhex-d
+  (lambda (x y hex d)
+    (if
+     (and
+      (number? x)
+      (number? y)
+      (string? hex)
+      (number? d)
+      (>= x 0)
+      (>= y 0)
+      (>= d 0)
+      )
+     (list x y hex d)
+     (raise "No es un pixhex-d")
+    )
+  )
+)
+
 ;TDA image - constructor
+
