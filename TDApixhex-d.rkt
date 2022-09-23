@@ -1,16 +1,57 @@
 #lang racket
 (provide (all-defined-out))
-;TDA pixhex-d
+
+;constructor de pixhex-d.
 (define (pixhex-d x y hex d)
 
-  ;Funcion que me da las posiciones int de un hex. 
-  (define stringHex->integerHex
-    (lambda (hex)
-      (list(list(string->number(substring hex 1 2))(string->number(substring hex 2 3)))
-           (list(string->number(substring hex 3 4))(string->number(substring hex 4 5)))
-           (list(string->number(substring hex 5 6))(string->number(substring hex 6 7))))))
-  
-    (if
+  ;Funcion que verifica que el numeros hexadecimal que entrega el usuario exista.
+  (define (verificarHex hex)
+  (if(equal? (substring hex 0 1) "#")
+     (if(or(or(equal?(substring hex 1 2)"A")
+              (equal?(substring hex 1 2)"B")
+              (equal?(substring hex 1 2)"C")
+              (equal?(substring hex 1 2)"D")
+              (equal?(substring hex 1 2)"E")
+              (equal?(substring hex 1 2)"F"))(integer? (string->number(substring hex 1 2))))
+        (if(or(or(equal?(substring hex 2 3)"A")
+              (equal?(substring hex 2 3)"B")
+              (equal?(substring hex 2 3)"C")
+              (equal?(substring hex 2 3)"D")
+              (equal?(substring hex 2 3)"E")
+              (equal?(substring hex 2 3)"F"))(integer? (string->number(substring hex 2 3))))
+           (if(or(or(equal?(substring hex 3 4)"A")
+              (equal?(substring hex 3 4)"B")
+              (equal?(substring hex 3 4)"C")
+              (equal?(substring hex 3 4)"D")
+              (equal?(substring hex 3 4)"E")
+              (equal?(substring hex 3 4)"F"))(integer? (string->number(substring hex 3 4))))
+              (if(or(or(equal?(substring hex 4 5)"A")
+              (equal?(substring hex 4 5)"B")
+              (equal?(substring hex 4 5)"C")
+              (equal?(substring hex 4 5)"D")
+              (equal?(substring hex 4 5)"E")
+              (equal?(substring hex 4 5)"F"))(integer? (string->number(substring hex 4 5))))
+                 (if(or(or(equal?(substring hex 5 6)"A")
+              (equal?(substring hex 5 6)"B")
+              (equal?(substring hex 5 6)"C")
+              (equal?(substring hex 5 6)"D")
+              (equal?(substring hex 5 6)"E")
+              (equal?(substring hex 5 6)"F"))(integer? (string->number(substring hex 5 6))))
+                    (if(or(or(equal?(substring hex 6 7)"A")
+              (equal?(substring hex 6 7)"B")
+              (equal?(substring hex 6 7)"C")
+              (equal?(substring hex 6 7)"D")
+              (equal?(substring hex 6 7)"E")
+              (equal?(substring hex 6 7)"F"))(integer? (string->number(substring hex 6 7))))
+                       #t
+                       #f)
+                    #f)
+                 #f)
+              #f)
+           #f)
+        #f)
+     #f))
+  (if
      (and
       (and(number? x)
           (integer? x)
@@ -20,21 +61,15 @@
           (>= y 0))
       (and(string? hex)
           (= (string-length hex) 7)
-          (equal? (substring hex 0 1) "#")
-          (number?(string->number(substring hex 1))))
+          (equal?(verificarHex hex)#t))
       (and(number? d)
           (>= d 0)))
-     (list (list x y) hex d "pixhex-d" (stringHex->integerHex hex))
+     (list (list x y) hex d "pixhex-d")
      (raise "No es un pixhex-d")
     )
   )
 
-(define (hex->getPosX pixhex-d)
-  (car(car pixhex-d)))
 
-
-(define pix (pixhex-d 0 0 "#123345" 4))
-
-
-              
+(define hex (pixhex-d 0 1 "#FF9910" 10))
+hex
 

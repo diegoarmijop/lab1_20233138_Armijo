@@ -1,14 +1,9 @@
 #lang racket
 (provide (all-defined-out))
-
-(*(-(exact->inexact(/ 16 16))(quotient 16 16)) 16)
-(quotient 189 16)
+;TDA pixrgb
+;constructor pixrgb-d
 (define (pixrgb-d x y r g b d)
-
-  
-
-  
-    (if
+  (if
      (and (and(number? x)
               (integer? x)
               (>= x 0))    
@@ -31,77 +26,67 @@
               (integer? d)
               (>= d 0)
               ))
-     (list (list x y) (list r g b) d "pixrgb-d" (agrupar(list r g b)))
+     (list (list x y) (list r g b) d "pixrgb-d" (append-rgb->hex (list r g b)))
      (raise "No es un pixrgb")
     )
   )
 
+;selectores
 (define (rgb->getR rgb)
-  (car(car(cdr rgb))))
+  (car(cadr rgb)))
 
 (define (rgb->getG rgb)
-  (cadr(car(cdr rgb))))
+  (cadr(cadr rgb)))
 
 (define (rgb->getB rgb)
-  (caddr(car(cdr rgb))))
-
-(define (rgb->getRGB rgb)
-  (cadr rgb))
-
-;(define (rgbR->hexR rgb)
-  ;(if(=(*(-(exact->inexact(/ (rgb->getR rgb) 16))(quotient(rgb->getR rgb) 16)) 16))
-     
-     ;)
-  
+  (caddr(cadr rgb)))
 
 
-(define (reglas num)
-  (define const(*(-(exact->inexact(/ num 16))(quotient num 16)) 16))
-  (if(and(>= const 0)(<= const 9))
-     (number->string (inexact->exact const))
-     (if(= const 10)
+
+(define (transform1 num)
+  (define formula (quotient num 16))
+  (if(and(>= formula 0)(<= formula 9))
+     (number->string (inexact->exact formula))
+     (if(= formula 10)
         "A"
-        (if(= const 11)
+        (if(= formula 11)
            "B"
-           (if(= const 12)
+           (if(= formula 12)
               "C"
-              (if(= const 13)
+              (if(= formula 13)
                  "D"
-                 (if(= const 14)
+                 (if(= formula 14)
                     "E"
-                    (if(= const 15)
+                    (if(= formula 15)
                        "F"
                        null))))))))
-        
-(define (reglas2 num)
-  (define const (quotient num 16))
-  (if(and(>= const 0)(<= const 9))
-     (number->string (inexact->exact const))
-     (if(= const 10)
+
+(define (transform2 num)
+  (define formula (*(-(exact->inexact(/ num 16))(quotient num 16)) 16))
+  (if(and(>= formula 0)(<= formula 9))
+     (number->string (inexact->exact formula))
+     (if(= formula 10)
         "A"
-        (if(= const 11)
+        (if(= formula 11)
            "B"
-           (if(= const 12)
+           (if(= formula 12)
               "C"
-              (if(= const 13)
+              (if(= formula 13)
                  "D"
-                 (if(= const 14)
+                 (if(= formula 14)
                     "E"
-                    (if(= const 15)
+                    (if(= formula 15)
                        "F"
                        null))))))))
-     
+
+(define (append-transform num)
+  (string-append (transform1 num) (transform2 num)))
+
+(define (append-rgb->hex rgb)
+  (string-append "#" (append-transform (car rgb))(append-transform (cadr rgb))(append-transform (caddr rgb))))
   
 
-(define (juntar num)
-  (string-append (reglas2 num) (reglas num)))
 
 
-(define (agrupar rgb)
-  (string-append "#" (juntar (car rgb)) (juntar (cadr rgb))  (juntar (caddr rgb))))
-  
-
-(define rgb (pixrgb-d 0 1 67 45 133 4))
-
-
-                  
+(define rgb (pixrgb-d 0 0 10 20 30 10))
+rgb
