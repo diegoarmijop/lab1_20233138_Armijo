@@ -113,6 +113,8 @@
 
 (define ex '(((1 0)(1 1))((0 0)(0 1))))
 (define ex2'((1 0)(1 1)(0 0)(0 1)))
+(define L1 '((0 0)(0 1)(1 0)(1 1)))
+
 
 ;(define (lol L  aux)
   ;(if(null? L)
@@ -124,6 +126,10 @@
   (if(=(car(car(car list)))num)
      #t
      #f))
+
+
+(define (loll img)
+  (car(list(car img))))
 
 
 
@@ -144,6 +150,8 @@
 
 
 
+;(define (prerotate90 L count))
+
 
 
 (define img (image 2 2 (pixbit-d 0 0 1 10)(pixbit-d 0 1 1 10)(pixbit-d 1 0 0 10)(pixbit-d 1 1 0 10)))
@@ -155,7 +163,30 @@ img3
 
 
 
+  
 
-     
-     
+(define (rotate90 img)
+  (list (image->getWidth img) (image->getHeight img)(juntar(reord(pre-rotate90 (caddr img) 0 '() (image->getWidth img)))) (image->getType img)))
+
+
+
+(define (juntar L)
+  (if(null? L)
+     L
+     (append (car L) (juntar (cdr L)))))
+
+(define (reord L)
+  (if(null? L)
+     L
+     (cons (reverse(car L)) (reord (cdr L)))))
+
+
+(define (pre-rotate90 L count lista n)
+  (if(= count n)
+    (reverse lista)
+    (pre-rotate90 (cdr L) (+ count 1)(cons (filter (lambda (e)(=(car(cdr (car e)))count)) L) lista) n)))
+
+
+(define (obtenerListaPix img)
+  (map loll (caddr img)))
           
