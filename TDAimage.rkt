@@ -116,6 +116,7 @@
 (define L1 '((0 0)(0 1)(1 0)(1 1)))
 
 
+
 ;(define (lol L  aux)
   ;(if(null? L)
      ;(cons  L aux)
@@ -138,7 +139,8 @@
   (car ex))
 (define ss(map hola ex))
 
-     
+(define (inter L)
+  (list ))     
 
 
 (define (lol lista aux)
@@ -154,21 +156,27 @@
 
 
 
-(define img (image 2 2 (pixbit-d 0 0 1 10)(pixbit-d 0 1 1 10)(pixbit-d 1 0 0 10)(pixbit-d 1 1 0 10)))
-(define img2 (image 2 2 (pixrgb-d 0 0 30 30 60 10)(pixrgb-d 0 1 30 30 60 10)(pixrgb-d 1 0 30 30 60 10)(pixrgb-d 1 1 30 30 60 10)))
+(define img (image 2 2 (pixbit-d 0 0 1 23)(pixbit-d 0 1 0 120)(pixbit-d 1 0 0 120)(pixbit-d 1 1 0 110)))
+(define img2 (image 2 2 (pixrgb-d 0 0 67 30 69 10)(pixrgb-d 0 1 67 30 69 20)(pixrgb-d 1 0 15 80 55 30)(pixrgb-d 1 1 90 32 60 10)))
 (define img3 (image 2 2 (pixhex-d 0 0 "#FF0011" 10)(pixhex-d 0 1 "#FF0011" 10)(pixhex-d 1 0 "#FF0011" 10)(pixhex-d 1 1 "#FF0011" 10)))
  img
 img2
 img3
 
+(define (image->getCoord img)
+  (car(car(caddr img))))
+;(image->getCoord img2)
 
-
-  
+;(map image->getCoord img)  
 
 (define (rotate90 img)
   (list (image->getWidth img) (image->getHeight img)(juntar(reord(pre-rotate90 (caddr img) 0 '() (image->getWidth img)))) (image->getType img)))
 
 
+
+ 
+
+;(define mapearCoord )
 
 (define (juntar L)
   (if(null? L)
@@ -189,4 +197,116 @@ img3
 
 (define (obtenerListaPix img)
   (map loll (caddr img)))
+
+
+(define (arreglar pix)
+  (list (rgb->getCoord pix) (rgb->getHex pix) (rgb->getDepth pix) "pixhex-d"))
+
+(define ouu(map arreglar (caddr img2)))
+
+
+
+(define (imgRGB->imgHex img)
+  (list (image->getWidth img) (image->getHeight img)))
+
+
+(caddr img2)
+
+
+
+
+
+(car(caddr img2))
+
+;(filter (lambda(P1)(>= (cadr P1)0))(filter (lambda(P1 )(>=(car P1)1)) L1))
+
+;(0 1)(1 2)
+
+
+(define (crop x y z w)
+(filter (lambda (P1)(and(>=(cadr P1)y)(<=(cadr P1)w)))(filter (lambda(P1)(and(>=(car P1)x)(<=(car P1)z))) L1)))
+
+(caddr img)
+
+;(define (histogrambit lista count aux)
+  ;(if(null? lista)
+     ;lista
+
+(define (histogrambit lista count aux n)
+  (if(= count n)
+     (reverse aux)
+     (histogrambit (cdr lista)(+ count 1) (cons(append (list count) (list(length(sort(map caddr(filter (lambda(e)(= (cadr e) count)) (caddr img))) <))))aux)n)))
+
+
+
+;(define (historgb lista count aux n)
+ ; (if(= count n)
+     ;(reverse aux)
+     ;(histo)
+
+;(list
+;(cons "R" (list (length (sort(map rgb->getR (caddr img2)) <)) (sort(map rgb->getR (caddr img2)) <)))
+;(cons "G" (list (length (sort(map rgb->getG (caddr img2)) <)) (sort(map rgb->getR (caddr img2)) <)))
+;(cons "B" (sort(map rgb->getB (caddr img2)) <)))
+
+;(sort (map rgb->getRGB (caddr img2)) (lambda(P1 P2)(<(car P1)(car P2))))
+(map rgb->getRGB (caddr img2))
+(car(car (map rgb->getRGB (caddr img2))))
+(car(cadr (map rgb->getRGB (caddr img2))))
+
+(define (rgbok L count)
+  (if(null? L)
+     count
+     (if(=(car(car L))(car(cadr L)))
+        (if(=(cadr(car L))(cadr(cadr L)))
+           (if(=(caddr(cadr L))(caddr(cadr L)))
+              (rgbok (cdr L) (+ count 1))
+              count)
+           count)
+        count)
+     )
+  )
+
+(define xdddd '(0 6))
+;(map xdddd (car(car(caddr img))))
+
+
+(define (veriok L)
+  (if(and(filter (lambda(e)(= (car e) (rgb->getR e)))(map rgb->getRGB (caddr img2)))
+         (filter (lambda(e)(= (cadr e) 30))(map rgb->getRGB (caddr img2)))
+         (filter (lambda(e)(= (caddr e) 69))(map rgb->getRGB (caddr img2))))#t
+                                                                            #f))
+     
+;(filter (lambda(e)(= (car e) (rgb->getR )))(map rgb->getRGB (caddr img2)))
+
+;(define (histogrambit lista count aux n)
+  ;(if(= count n)
+     ;(reverse aux)
+     ;(histogrambit (cdr lista)(+ count 1) (cons(list (map cadr (filter (lambda(e)(= (cadr e) count)) (caddr img))) (map caddr(filter (lambda(e)(= (cadr e) count)) (caddr img))))aux) n))) 
+     
+ 
+
+;(list (map cadr (filter (lambda(e)(= (cadr e) 1)) (caddr img))) (map caddr(filter (lambda(e)(= (cadr e) 1)) (caddr img))))
+
+(define (contador L)
+  (filter (lambda (e)(= e 120)) L))
+
+(define (recu L count)
+  (=(length L)1)
+  (+ count 1)
+  (recu (cdr L)(+ count 1)))
           
+(define (reu x)
+(filter (lambda (P1)(=(car L1)(rgb->getR x)))(map rgb->getRGB (caddr img2))))
+
+;(sort (map car (caddr(rotate90 img2))) (lambda (P1 P2)(<(car P1)(car P2))))
+
+
+(caddr (rotate90 img))
+
+
+(define (cambiarCoord L1 img)
+  (list (car L1) img))
+
+
+;(map cambiarCoord (caddr img))
