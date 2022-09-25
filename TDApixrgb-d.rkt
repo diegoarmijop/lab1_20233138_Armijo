@@ -32,6 +32,9 @@
   )
 
 ;selectores
+(define (rgb->getRGB rgb)
+  (cadr rgb))
+
 (define (rgb->getR rgb)
   (car(cadr rgb)))
 
@@ -40,6 +43,14 @@
 
 (define (rgb->getB rgb)
   (caddr(cadr rgb)))
+
+(define (rgb->getHex rgb)
+  (cadddr(cdr rgb)))
+
+(define (rgb->getCoord rgb)
+  (car rgb))
+(define (rgb->getDepth rgb)
+  (caddr rgb))
 
 
 
