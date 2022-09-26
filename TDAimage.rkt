@@ -147,7 +147,17 @@
 (define (selectX pix)
   (car(car(car pix))))
 
+(define (pix->getListX pix)
+    (map pix->getX pix))
 
+ (define (pix->getX pix)
+    (car(car pix)))
+
+(define (pix->getY pix)
+    (cadr(car pix)))
+
+  (define (pix->getListY pix)
+    (map pix->getY pix))
 
 ;-------------------------------- FUNCIONALIDADES --------------------------------
 
@@ -165,6 +175,22 @@
         (generateCoord width height x (+ y 1) (cons (list x y) lista)))
      )
 )
+
+;Funcion que comparar dos pixeles.
+(define verifyOrder
+    (lambda (P1 P2)
+      (if(=(car P1)(car P2))
+         (<(cadr P1)(cadr P2))
+         (<(car P1)(car P2))
+      )
+  )
+)
+
+(define (setCoord L img listAux)
+  (if(null? img)
+     (reverse listAux)
+     (setCoord (cdr L)(cdr img) (cons(append(list(car L))(cdr(car img)))listAux))))
+
 
 ;Funcion que indica si una imagen es un bitmap.
 ;Dominio: image.
@@ -226,6 +252,15 @@
      L
      (append (car L) (agrupar (cdr L)))))
 
+;Funcion que verifica si una imagen esta comprimida.
+;Dominio: image.
+;Recorrido: boolean.
+(define (compressed? img)
+  (if(<(length(image->getPix img))(*(image->getWidth img)(image->getHeight img)))
+     #t
+     #f)
+)
+
 
 ;Funcion que permite invertir una imagen horizontalmente.
 ;Dominio: image
@@ -269,6 +304,141 @@
         (image->getType img))
 )
 
+;Funcion que recorta una imagen segun un parametro.
+;Dominio: image x int x int x int x int.
+;Recorrido: image.
+(define (crop img x y z w)
+
+  (define (findWidth L count)
+    (if(=(length L)1)
+       (+ count 1)
+       (if(=(car L)(cadr L))
+          (findWidth (cdr L) (+ count 1))
+          (+ count 1)))
+  )
+
+  (define (findHeight L count)
+    (if(=(length L)1)
+       (+ count 1)
+       (if(=(+(car L)1)(cadr L))
+          (findHeight (cdr L) (+ count 1))
+          (+ count 1)))
+  )
+  
+  (define (pre-crop L x y z w)
+    (filter (lambda (P1)(and(>=(cadr(car P1))y)(<=(cadr (car P1))w)))
+            (filter (lambda(P1)(and(>=(car (car P1))x)(<=(car (car P1))z))) (caddr L)))
+  )
+  
+  (if(or(> x z)(> y w))
+     (raise "Ingrese una zona valida.")
+     (if (and(= x z)(= y w))
+         (list 1 1 (car(pre-crop img x y z w)) (make-list (length (pre-crop img x y z w)) (car(pix->getType(image->getPix img)))))
+         (list (findWidth (pix->getListX(pre-crop img x y z w)) 0)
+               (/(length(pix->getListY(pre-crop img x y z w)))(findHeight (pix->getListY(pre-crop img x y z w)) 0))
+               (setCoord  (generateCoord (findWidth (pix->getListX(pre-crop img x y z w)) 0)
+                                         (/(length(pix->getListY(pre-crop img x y z w)))(findHeight (pix->getListY(pre-crop img x y z w)) 0))
+                                         0 0 '())
+                          (pre-crop img x y z w) '())
+               (make-list (length (pre-crop img x y z w)) (car(pix->getType(image->getPix img))))))
+     )
+ )
+
+;Funcion que transforma una imagen rgb en hexadecimal.
+;Dominio: image.
+;Recorrido: image.
+(define (imgRGB->imgHex img)
+
+  (define (setNewPix pix)
+    (list (rgb->getCoord pix) (rgb->getHex pix) (rgb->getDepth pix) "pixhex-d")
+  )
+  
+  (if(pixmap? img)
+     (list (image->getWidth img)
+           (image->getHeight img)
+           (map setNewPix (image->getPix img))
+           (pix->getType (map setNewPix (image->getPix img))))
+     (raise "Ingrese una imagen rgb.")
+     )
+)
+
+;Funcion que rota una imagen 90 grados.
+;Dominio: image.
+;Recorrido: image.
+(define (rotate90 img)
+
+  (define (reordenar L)
+    (if(null? L)
+       L
+       (cons (reverse(car L)) (reordenar (cdr L))))
+  )
+
+  (define (juntar L)
+    (if(null? L)
+       L
+       (append (car L) (juntar (cdr L))))
+    )
+
+  (define (pre-rotate90 L count lista n)
+    (if(= count n)
+       (reverse lista)
+       (pre-rotate90 (cdr L) (+ count 1)(cons (filter (lambda (e)(=(car(cdr (car e)))count)) L) lista) n))
+    )
+  
+  (list (image->getHeight img)
+        (image->getWidth img)
+        (setCoord (generateCoord (image->getHeight img)(image->getWidth img)0 0 '())
+                  (juntar(reordenar(pre-rotate90 (image->getPix img) 0 '() (image->getWidth img)))) '())
+        (image->getType img))
+)
+
+;Funcion que invierte el bit en una imagen.
+;Dominio: image.
+;Recorrido: image.
+(define (invertColorBit img)
+
+  (define (arr L v)
+    (if(null? L)
+       L
+       (cons(cons (car v)(cdr(cdr(reverse(car L)))))(arr (cdr L)(cdr v)))))
+
+  (define (juntarAllBit L)
+    (if(null? L)
+       L
+       (cons(reverse (car L))(juntarAllBit (cdr L)))))
+
+  (define (agregarBitOpuesto L)
+    (if(null? L)
+       L
+       (cons
+        (append(cons (car(reverse (car L))) (cdr(cdr(car L))))(list(car(cdr(car L)))))
+        (agregarBitOpuesto (cdr L)))))
+
+  (define (juntarBit c L)
+    (if(null? L)
+       L
+       (cons(cons (car c)(car L))(juntarBit (cdr c)(cdr L)))))
+
+  
+  (if(bitmap? img)
+     (list (image->getWidth img)
+           (image->getHeight img)
+           (juntarAllBit(arr
+                         (juntarBit(generateCoord (image->getWidth img) (image->getHeight img) 0 0 '())
+                                   (agregarBitOpuesto (image->getPix img)))
+                         (map car (juntarAllBit (juntarBit (generateCoord (image->getWidth img) (image->getHeight img) 0 0 '())
+                                                           (agregarBitOpuesto (image->getPix img)))
+                                                )
+                              )
+                         )
+                        )
+           )
+     (raise "Ingrese in bitmap.")
+     )
+)
+
+
+
 
   
 ;(define (preFlipVk L lista count aux)
@@ -283,7 +453,7 @@
 ;(define (xddd img)
   ;(car(car(car img))))
 
-(define ex '(((1 0)(1 1))((0 0)(0 1))))
+;(define ex '(((1 0)(1 1))((0 0)(0 1))))
 ;(define ex2'((1 0)(1 1)(0 0)(0 1)))
 ;(define L1 '((0 0)(0 1)(1 0)(1 1)(2 0)(2 1)))
 
@@ -301,26 +471,26 @@
      ;#f))
 
 
-(define (loll img)
-  (car(list(car img))))
+;(define (loll img)
+  ;(car(list(car img))))
 
 
 
 
-(define (hola ex)
-  (car ex))
-(define ss(map hola ex))
+;(define (hola ex)
+  ;(car ex))
+;(define ss(map hola ex))
 
-(define (inter L)
-  (list ))     
+;(define (inter L)
+  ;(list ))     
 
 
-(define (lol lista aux)
-  (if(null? lista)
-     (cons aux lista)
-     (if(null?(car lista))
-        (cons(map hola lista)aux)
-        (lol (cons(cdr(car lista))(list(cdr(car(cdr lista))))) (map hola lista)))))
+;(define (lol lista aux)
+  ;(if(null? lista)
+     ;(cons aux lista)
+     ;(if(null?(car lista))
+        ;(cons(map hola lista)aux)
+        ;(lol (cons(cdr(car lista))(list(cdr(car(cdr lista))))) (map hola lista)))))
 
 
 
@@ -328,133 +498,83 @@
 
 
 
-(define img (image 2 3 (pixbit-d 0 0 1 10)(pixbit-d 0 1 0 10)(pixbit-d 1 0 1 30)(pixbit-d 1 1 1 50)
+(define img (image 2 3 (pixbit-d 0 0 0 10)(pixbit-d 0 1 0 10)(pixbit-d 1 0 1 30)(pixbit-d 1 1 1 50)
                    (pixbit-d 2 0 0 50)(pixbit-d 2 1 0 50))) 
 (define img2 (image 3 3 (pixrgb-d 0 0 67 30 69 10)(pixrgb-d 0 1 67 30 69 20)(pixrgb-d 0 2 15 80 55 30)
                     (pixrgb-d 1 0 90 32 60 10)(pixrgb-d 1 1 90 32 60 10)(pixrgb-d 1 2 90 32 60 10)
                     (pixrgb-d 2 0 90 32 60 10)(pixrgb-d 2 1 90 32 60 10)(pixrgb-d 2 2 90 32 60 10)))
 (define img3 (image 2 2 (pixhex-d 0 0 "#FF0011" 10)(pixhex-d 0 1 "#FF0011" 10)(pixhex-d 1 0 "#FF0011" 10)(pixhex-d 1 1 "#FF0011" 10)))
- img
-img2
-img3
+ ;img
+;img2
+;img3
 
-(define (image->getCoord img)
-  (car(car(caddr img))))
-(image->getCoord img2)
-(define (oi img)
-  (car img))
-(define verifyOrder
-    (lambda (P1 P2)
-      (if(=(car P1)(car P2))
-         (<(cadr P1)(cadr P2))
-         (<(car P1)(car P2))
-      )
-  ))
-(sort (map oi (caddr img)) verifyOrder) 
+;(define (image->getCoord img)
+  ;(car(car(caddr img))))
+;(image->getCoord img2)
+;(define (oi img)
+  ;(car img))
 
 
 
 
 
-(define (rotate90 img)
-  (list (image->getHeight img)(image->getWidth img) (setCoord (generateCoord (image->getHeight img)(image->getWidth img)0 0 '()) (juntar(reord(pre-rotate90 (caddr img) 0 '() (image->getWidth img)))) '()) (image->getType img)))
+
 
 
 
 
 ;(define mapearCoord )
 
-(define (juntar L)
-  (if(null? L)
-     L
-     (append (car L) (juntar (cdr L)))))
-
-(define (reord L)
-  (if(null? L)
-     L
-     (cons (reverse(car L)) (reord (cdr L)))))
-
-
-(define (pre-rotate90 L count lista n)
-  (if(= count n)
-    (reverse lista)
-    (pre-rotate90 (cdr L) (+ count 1)(cons (filter (lambda (e)(=(car(cdr (car e)))count)) L) lista) n)))
-
-
-(define (obtenerListaPix img)
-  (map loll (caddr img)))
-
-
-(define (arreglar pix)
-  (list (rgb->getCoord pix) (rgb->getHex pix) (rgb->getDepth pix) "pixhex-d"))
-
-(define ouu(map arreglar (caddr img2)))
 
 
 
-(define (imgRGB->imgHex img)
-  (list (image->getWidth img) (image->getHeight img)))
 
 
-(caddr img2)
 
 
-(define (setCoord L img c)
-  (if(null? img)
-     (reverse c)
-     (setCoord (cdr L)(cdr img) (cons(append(list(car L))(cdr(car img)))c))))
+
+;(define (obtenerListaPix img)
+  ;(map loll (caddr img)))
 
 
-(car(caddr img2))
+
+
+;(define ouu (map setNewPix (caddr img2)))
+
+
+
+
+
+
+
+
+
+
+;(car(caddr img2))
 
 ;(filter (lambda(P1)(>= (cadr P1)0))(filter (lambda(P1 )(>=(car P1)1)) L1))
 
 ;(0 1)(1 2)
 
-(define (pre-crop L x y z w)
- (filter (lambda (P1)(and(>=(cadr(car P1))y)(<=(cadr (car P1))w)))(filter (lambda(P1)(and(>=(car (car P1))x)(<=(car (car P1))z))) (caddr L))))
-
-(define (pix->getListX pix)
-    (map pix->getX pix))
-
- (define (pix->getX pix)
-    (car(car pix)))
-
-(define (findWidth L count)
-  (if(=(length L)1)
-     (+ count 1)
-     (if(=(car L)(cadr L))
-        (findWidth (cdr L) (+ count 1))
-        (+ count 1))))
-
-(define (pix->getY pix)
-    (cadr(car pix)))
-
-  (define (pix->getListY pix)
-    (map pix->getY pix))
-
-(define (findHeight L count)
-  (if(=(length L)1)
-     (+ count 1)
-     (if(=(+(car L)1)(cadr L))
-        (findHeight (cdr L) (+ count 1))
-        (+ count 1))))
+;(define (pre-crop L x y z w)
+ ;(filter (lambda (P1)(and(>=(cadr(car P1))y)(<=(cadr (car P1))w)))
+         ;(filter (lambda(P1)(and(>=(car (car P1))x)(<=(car (car P1))z))) (caddr L)))
+;)
 
 
 
 
-(define (crop img x y z w)
-  (if(or(> x z)(> y w))
-     (raise "Ingrese una zona valida.")
-     (if (and(= x z)(= y w))
-         (list 1 1 (car(pre-crop img x y z w)) (make-list (length (pre-crop img x y z w)) (car(pix->getType(image->getPix img)))))
-         (list (findWidth (pix->getListX(pre-crop img x y z w)) 0)(/(length(pix->getListY(pre-crop img x y z w)))(findHeight (pix->getListY(pre-crop img x y z w)) 0)) (setCoord  (generateCoord (findWidth (pix->getListX(pre-crop img x y z w)) 0) (/(length(pix->getListY(pre-crop img x y z w)))(findHeight (pix->getListY(pre-crop img x y z w)) 0)) 0 0 '())  (pre-crop img x y z w) '()) (make-list (length (pre-crop img x y z w)) (car(pix->getType(image->getPix img))))))))
+
+
+
+
+
 
 ;(define (crop L x y z w)
 ;(filter (lambda (P1)(and(>=(cadr P1)y)(<=(cadr P1)w)))(filter (lambda(P1)(and(>=(car P1)x)(<= (car P1)z))) L)))
 
-(caddr img)
-(caddr img)
+;(caddr img)
+;(caddr img)
 
 ;(define (histogrambit lista count aux)
   ;(if(null? lista)
@@ -479,32 +599,32 @@ img3
 ;(cons "B" (sort(map rgb->getB (caddr img2)) <)))
 
 ;(sort (map rgb->getRGB (caddr img2)) (lambda(P1 P2)(<(car P1)(car P2))))
-(map rgb->getRGB (caddr img2))
-(car(car (map rgb->getRGB (caddr img2))))
-(car(cadr (map rgb->getRGB (caddr img2))))
+;(map rgb->getRGB (caddr img2))
+;(car(car (map rgb->getRGB (caddr img2))))
+;(car(cadr (map rgb->getRGB (caddr img2))))
 
-(define (rgbok L count)
-  (if(null? L)
-     count
-     (if(=(car(car L))(car(cadr L)))
-        (if(=(cadr(car L))(cadr(cadr L)))
-           (if(=(caddr(cadr L))(caddr(cadr L)))
-              (rgbok (cdr L) (+ count 1))
-              count)
-           count)
-        count)
-     )
-  )
+;(define (rgbok L count)
+ ; (if(null? L)
+    ; count
+   ;  (if(=(car(car L))(car(cadr L)))
+       ; (if(=(cadr(car L))(cadr(cadr L)))
+          ; (if(=(caddr(cadr L))(caddr(cadr L)))
+              ;(rgbok (cdr L) (+ count 1))
+             ; count)
+           ;count)
+        ;count)
+     ;)
+ ; )
 
-(define xdddd '(0 6))
+;(define xdddd '(0 6))
 ;(map xdddd (car(car(caddr img))))
 
 
-(define (veriok L)
-  (if(and(filter (lambda(e)(= (car e) (rgb->getR e)))(map rgb->getRGB (caddr img2)))
-         (filter (lambda(e)(= (cadr e) 30))(map rgb->getRGB (caddr img2)))
-         (filter (lambda(e)(= (caddr e) 69))(map rgb->getRGB (caddr img2))))#t
-                                                                            #f))
+;(define (veriok L)
+  ;(if(and(filter (lambda(e)(= (car e) (rgb->getR e)))(map rgb->getRGB (caddr img2)))
+        ;(filter (lambda(e)(= (cadr e) 30))(map rgb->getRGB (caddr img2)))
+         ;(filter (lambda(e)(= (caddr e) 69))(map rgb->getRGB (caddr img2))))#t
+                                                                            ;#f))
      
 ;(filter (lambda(e)(= (car e) (rgb->getR )))(map rgb->getRGB (caddr img2)))
 
@@ -513,76 +633,29 @@ img3
      ;(reverse aux)
      ;(histogrambit (cdr lista)(+ count 1) (cons(list (map cadr (filter (lambda(e)(= (cadr e) count)) (caddr img))) (map caddr(filter (lambda(e)(= (cadr e) count)) (caddr img))))aux) n))) 
      
- 
-
 ;(list (map cadr (filter (lambda(e)(= (cadr e) 1)) (caddr img))) (map caddr(filter (lambda(e)(= (cadr e) 1)) (caddr img))))
-
-(define (contador L)
-  (filter (lambda (e)(= e 120)) L))
-
-(define (recu L count)
-  (=(length L)1)
-  (+ count 1)
-  (recu (cdr L)(+ count 1)))
-          
+;(define (contador L)
+;(filter (lambda (e)(= e 120)) L))
+;(define (recu L count)
+;(=(length L)1)
+;(+ count 1)
+;(recu (cdr L)(+ count 1)))         
 ;(define (reu x)
 ;(filter (lambda (P1)(=(car L1)(rgb->getR x)))(map rgb->getRGB (caddr img2))))
-
 ;(sort (map car (caddr(rotate90 img2))) (lambda (P1 P2)(<(car P1)(car P2))))
-
-
 ;(caddr (rotate90 img))
-
-
-(define (cambiarCoord L1 img)
-  (list (car L1) img))
-
-
+;(define (cambiarCoord L1 img) ;(list (car L1) img))
 ;(map cambiarCoord (caddr img))
-
 ;holajean L newElement
 ;(append (car newElement) (cdr L))
-
-
-(define L7 '((0 0)(2 1)(1 1)(0 1)))
-(sort L7 (lambda(P1 P2)(<(car P1)(car P2))))
+;(define L7 '((0 0)(2 1)(1 1)(0 1)))
+;(sort L7 (lambda(P1 P2)(<(car P1)(car P2))))
 ;(define L8 (caddr(rotate90 img)))
-
-
-(define (setNewCoord L img)
-  (list L img))
-
+;(define (setNewCoord L img)
+  ;(list L img))
 ;(define (invertColorBit img)
   ;(;list (image->getWidth img) (image->getHeight img ) (image->getPix img))
-
-
-
-(define (ff L)
-  (if(null? L)
-     L
-     (cons(append(cons (car(reverse (car L))) (cdr(cdr(car L))))(list(car(cdr(car L))))) (ff (cdr L)))))
-
-
-(define (juntarBit c L)
-  (if(null? L)
-     L
-     (cons(cons (car c)(car L))(juntarBit (cdr c)(cdr L)))))
-
-(cons (map car (reverse(reverse(ff (caddr img)))))(juntarBit (generateCoord 2 3 0 0 '()) (ff (caddr img))))
-
-
-(define (arr L v)
-  (if(null? L)
-     L
-     (cons(cons (car v)(cdr(cdr(reverse(car L)))))(arr (cdr L)(cdr v)))))
-     
-(define (lolll L)
-  (if(null? L)
-     L
-     (cons(reverse (car L))(lolll (cdr L)))))
-
+;(;cons (map car (reverse(reverse(agregarBitOpuesto (caddr img)))))(juntarBit (generateCoord 2 3 0 0 '()) (agregarBitOpuesto (caddr img))))
 ;(map car (reverse(car(juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img))))))
-
-
 ;(map car (lolll (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))))
 ;(lolll(arr (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))(map car (lolll (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))))))
