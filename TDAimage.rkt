@@ -42,7 +42,46 @@
 ;Dominio: width x height x pix.
 ;Recorrido: boolean.
 ;Tipo de recursion: No aplica.
-(define (image? width height . pix)
+(define (image? width height pix)
+
+   (define verifyOrder
+    (lambda (P1 P2)
+      (if(=(car(car P1))(car(car P2)))
+         (<(cadr(car P1))(cadr(car P2)))
+         (<(car(car P1))(car(car P2))))
+      )
+  )
+
+  (define (pix->getX pix)
+    (car(car pix)))
+
+  (define (pix->getY pix)
+    (cadr(car pix)))
+  
+  (define (pix->getListX pix)
+    (map pix->getX pix))
+
+  (define (pix->getListY pix)
+    (map pix->getY pix))
+
+  (define (verifyX L count)
+  (if(= (length L) 1)
+     (+ count 1)
+     (if(=(car L)(cadr L))
+        (verifyX (cdr L) (+ count 1))
+        (if(=(+(car L)1)(cadr L))
+           (verifyX (cdr L) (+ count 1))
+           #f))))
+
+  (define (verifyY L count)
+  (if(=(length L)1)
+     (+ count 1)
+     (if(=(+(car L)1)(cadr L))
+        (verifyY (cdr L)(+ count 1))
+        (if(=(cadr L)0)
+        (verifyY (cdr L)(+ count 1))
+        #f))))
+ 
   (if(and (and(number? width)
               (integer? width)
               (>= width 0))
@@ -51,7 +90,11 @@
               (>= height 0))
           (and(list? pix)
               (not(null? pix))
-              (<=(length pix)(* width height)))
+              (<=(length pix)(* width height))
+              (= (verifyX (pix->getListX (sort pix verifyOrder)) 0) (* width height))
+              (= (verifyY (pix->getListY (sort pix verifyOrder)) 0)(* width height))
+              )
+                 
       )
      #t
      #f)
@@ -101,8 +144,34 @@
   (caddr img)
 )
 
+(define (selectX pix)
+  (car(car(car pix))))
+
+
+
+;-------------------------------- FUNCIONALIDADES --------------------------------
+
+
+;Funcion que genera coordenadas ordenas en base al width y height.
+;Dominio: width (int) x height (int) x (int) x (int) x (list)
+;Recorrido: lista.
+;Tipo de recursion: cola.
+;Ejemplo de uso: (generateCoord 2 2 0 0 '())
+(define(generateCoord width height x y lista)
+  (if(= height x)
+     (reverse lista)
+     (if(= width y)
+        (generateCoord width height (+ x 1) 0 lista)
+        (generateCoord width height x (+ y 1) (cons (list x y) lista)))
+     )
+)
+
+;Funcion que indica si una imagen es un bitmap.
+;Dominio: image.
+;Recorrido: boolean.
 (define (bitmap? image)
-  (esBitmap? (image->getType image)))
+  (esBitmap? (image->getType image))
+)
 
 (define (esBitmap? lista)
   (if(null? lista)
@@ -114,8 +183,12 @@
   )
 )
 
+;Funcion que indica si una imagen es un pixmap.
+;Dominio: image.
+;Recorrido: boolean.
 (define (pixmap? image)
-  (esPixmap? (image->getType image)))
+  (esPixmap? (image->getType image))
+)
 
 (define (esPixmap? lista)
   (if(null? lista)
@@ -127,8 +200,12 @@
   )
 )
 
+;Funcion que indica si una imagen es un hexmap.
+;Dominio: image.
+;Recorrido: boolean.
 (define (hexmap? image)
-  (esHexmap? (image->getType image)))
+  (esHexmap? (image->getType image))
+)
 
 (define (esHexmap? lista)
   (if(null? lista)
@@ -140,51 +217,75 @@
   )
 )
 
-
-
-(define (agrop L)
+;Funcion que agrupa.
+;Dominio: list.
+;Recorrido: list.
+;Tipo de recursion: natural.
+(define (agrupar L)
   (if(null? L)
      L
-     (append (car L) (agrop (cdr L)))))
+     (append (car L) (agrupar (cdr L)))))
 
 
-(define (preFlipH L lista count aux)
+;Funcion que permite invertir una imagen horizontalmente.
+;Dominio: image
+;Recorrido: image
+;Tipo de recursion: cola. 
+(define (flipH img)
+  
+  (define (preFlipH L lista count aux)
   (if(null? L)
      (reverse (cons aux lista))
-     (if(= count (car(car(car L))))
+     (if(= count (selectX L))
         (preFlipH (cdr L) lista count (cons (car L) aux))
         (preFlipH (cdr L) (cons aux lista) (+ count 1) (cons (car L)'())))))
+  
 
-(define (flipH img)
-    (list (image->getWidth img)(image->getHeight img)(setCoord (sort (map oi (image->getPix img)) verifyOrder1) (agrop(preFlipH (image->getPix img) '() 0 '())) '()) (image->getType img)))
+  (list (image->getWidth img)
+        (image->getHeight img)
+        (setCoord (sort (map car (image->getPix img)) verifyOrder) (agrupar(preFlipH (image->getPix img) '() 0 '())) '())
+        (image->getType img))
+)
 
-(define (preFlipV L lista count aux)
-  (if(null? L)
-     (cons aux lista)
-     (if(= count (car(car(car L))))
-        (preFlipV (cdr L) lista count (reverse(cons (car L) aux)))
-        (preFlipV (cdr L) (cons aux lista) (+ count 1) (cons (car L)'())))))
 
+;Funcion que permite invertir una imagen verticalmente.
+;Dominio: image.
+;Recorrido: image.
+;Tipo de recursion: cola.  
 (define (flipV img)
-  (list (image->getWidth img)(image->getHeight img)(setCoord (sort (map oi (image->getPix img)) verifyOrder1) (agrop(preFlipV (image->getPix img) '() 0 '()))'()) (image->getType img)))
+  
+  (define (preFlipV pix lista count aux)
+  (if(null? pix)
+     (cons aux lista)
+     (if(= count (selectX pix))
+        (preFlipV (cdr pix) lista count (reverse(cons (car pix) aux)))
+        (preFlipV (cdr pix) (cons aux lista) (+ count 1) (cons (car pix)'())))
+     )
+   )
+  
+  (list (image->getWidth img)
+        (image->getHeight img)
+        (setCoord (sort (map car (image->getPix img)) verifyOrder) (agrupar(preFlipV (image->getPix img) '() 0 '()))'())
+        (image->getType img))
+)
 
 
   
-(define (preFlipVk L lista count aux)
-  (if(null? L)
-     (cons aux lista)
-     (if(= count (car(car(car L))))
-        (preFlipVk (cdr L) lista count (reverse(cons (car L) aux)))
-        (preFlipVk (cdr L) (reverse(cons aux lista)) (+ count 1) (cons (car L)'())))))
+;(define (preFlipVk L lista count aux)
+  ;(if(null? L)
+     ;(cons aux lista)
+     ;(if(= count (car(car(car L))))
+        ;(preFlipVk (cdr L) lista count (reverse(cons (car L) aux)))
+        ;(preFlipVk (cdr L) (reverse(cons aux lista)) (+ count 1) (cons (car L)'())))))
 
 
 
-(define (xddd img)
-  (car(car(car img))))
+;(define (xddd img)
+  ;(car(car(car img))))
 
 (define ex '(((1 0)(1 1))((0 0)(0 1))))
-(define ex2'((1 0)(1 1)(0 0)(0 1)))
-(define L1 '((0 0)(0 1)(1 0)(1 1)(2 0)(2 1)))
+;(define ex2'((1 0)(1 1)(0 0)(0 1)))
+;(define L1 '((0 0)(0 1)(1 0)(1 1)(2 0)(2 1)))
 
 
 
@@ -194,10 +295,10 @@
      ;(lol (cons(cdr(car L))(cdr L)) (cons(car(car L)) aux ))))
 
 
-(define (verificar list num)
-  (if(=(car(car(car list)))num)
-     #t
-     #f))
+;(define (verificar list num)
+  ;(if(=(car(car(car list)))num)
+     ;#t
+     ;#f))
 
 
 (define (loll img)
@@ -227,8 +328,11 @@
 
 
 
-(define img (image 2 2 (pixbit-d 0 0 0 120)(pixbit-d 0 1 0 120)(pixbit-d 1 0 1 23)(pixbit-d 1 1 0 110)(pixbit-d 2 0 0 110)(pixbit-d 2 1 0 110)))
-(define img2 (image 2 2 (pixrgb-d 0 0 67 30 69 10)(pixrgb-d 0 1 67 30 69 20)(pixrgb-d 1 0 15 80 55 30)(pixrgb-d 1 1 90 32 60 10)))
+(define img (image 2 3 (pixbit-d 0 0 1 10)(pixbit-d 0 1 0 10)(pixbit-d 1 0 1 30)(pixbit-d 1 1 1 50)
+                   (pixbit-d 2 0 0 50)(pixbit-d 2 1 0 50))) 
+(define img2 (image 3 3 (pixrgb-d 0 0 67 30 69 10)(pixrgb-d 0 1 67 30 69 20)(pixrgb-d 0 2 15 80 55 30)
+                    (pixrgb-d 1 0 90 32 60 10)(pixrgb-d 1 1 90 32 60 10)(pixrgb-d 1 2 90 32 60 10)
+                    (pixrgb-d 2 0 90 32 60 10)(pixrgb-d 2 1 90 32 60 10)(pixrgb-d 2 2 90 32 60 10)))
 (define img3 (image 2 2 (pixhex-d 0 0 "#FF0011" 10)(pixhex-d 0 1 "#FF0011" 10)(pixhex-d 1 0 "#FF0011" 10)(pixhex-d 1 1 "#FF0011" 10)))
  img
 img2
@@ -236,27 +340,24 @@ img3
 
 (define (image->getCoord img)
   (car(car(caddr img))))
-;(image->getCoord img2)
+(image->getCoord img2)
 (define (oi img)
   (car img))
-(define verifyOrder1
+(define verifyOrder
     (lambda (P1 P2)
       (if(=(car P1)(car P2))
          (<(cadr P1)(cadr P2))
          (<(car P1)(car P2))
       )
   ))
-(sort (map oi (caddr img)) verifyOrder1) 
+(sort (map oi (caddr img)) verifyOrder) 
 
 
 
-(define (setCoord L img c)
-  (if(null? img)
-     (reverse c)
-     (setCoord (cdr L)(cdr img) (cons(append(list(car L))(cdr(car img)))c))))
+
 
 (define (rotate90 img)
-  (list (image->getWidth img) (image->getHeight img) (setCoord L1 (juntar(reord(pre-rotate90 (caddr img) 0 '() (image->getWidth img)))) '()) (image->getType img)))
+  (list (image->getHeight img)(image->getWidth img) (setCoord (generateCoord (image->getHeight img)(image->getWidth img)0 0 '()) (juntar(reord(pre-rotate90 (caddr img) 0 '() (image->getWidth img)))) '()) (image->getType img)))
 
 
 
@@ -298,7 +399,10 @@ img3
 (caddr img2)
 
 
-
+(define (setCoord L img c)
+  (if(null? img)
+     (reverse c)
+     (setCoord (cdr L)(cdr img) (cons(append(list(car L))(cdr(car img)))c))))
 
 
 (car(caddr img2))
@@ -310,9 +414,41 @@ img3
 (define (pre-crop L x y z w)
  (filter (lambda (P1)(and(>=(cadr(car P1))y)(<=(cadr (car P1))w)))(filter (lambda(P1)(and(>=(car (car P1))x)(<=(car (car P1))z))) (caddr L))))
 
+(define (pix->getListX pix)
+    (map pix->getX pix))
+
+ (define (pix->getX pix)
+    (car(car pix)))
+
+(define (findWidth L count)
+  (if(=(length L)1)
+     (+ count 1)
+     (if(=(car L)(cadr L))
+        (findWidth (cdr L) (+ count 1))
+        (+ count 1))))
+
+(define (pix->getY pix)
+    (cadr(car pix)))
+
+  (define (pix->getListY pix)
+    (map pix->getY pix))
+
+(define (findHeight L count)
+  (if(=(length L)1)
+     (+ count 1)
+     (if(=(+(car L)1)(cadr L))
+        (findHeight (cdr L) (+ count 1))
+        (+ count 1))))
+
+
+
 
 (define (crop img x y z w)
-  (list (image->getWidth img) (image->getHeight img) (pre-crop img x y z w) (image->getType img)))
+  (if(or(> x z)(> y w))
+     (raise "Ingrese una zona valida.")
+     (if (and(= x z)(= y w))
+         (list 1 1 (car(pre-crop img x y z w)) (make-list (length (pre-crop img x y z w)) (car(pix->getType(image->getPix img)))))
+         (list (findWidth (pix->getListX(pre-crop img x y z w)) 0)(/(length(pix->getListY(pre-crop img x y z w)))(findHeight (pix->getListY(pre-crop img x y z w)) 0)) (setCoord  (generateCoord (findWidth (pix->getListX(pre-crop img x y z w)) 0) (/(length(pix->getListY(pre-crop img x y z w)))(findHeight (pix->getListY(pre-crop img x y z w)) 0)) 0 0 '())  (pre-crop img x y z w) '()) (make-list (length (pre-crop img x y z w)) (car(pix->getType(image->getPix img))))))))
 
 ;(define (crop L x y z w)
 ;(filter (lambda (P1)(and(>=(cadr P1)y)(<=(cadr P1)w)))(filter (lambda(P1)(and(>=(car P1)x)(<= (car P1)z))) L)))
@@ -389,13 +525,13 @@ img3
   (+ count 1)
   (recu (cdr L)(+ count 1)))
           
-(define (reu x)
-(filter (lambda (P1)(=(car L1)(rgb->getR x)))(map rgb->getRGB (caddr img2))))
+;(define (reu x)
+;(filter (lambda (P1)(=(car L1)(rgb->getR x)))(map rgb->getRGB (caddr img2))))
 
 ;(sort (map car (caddr(rotate90 img2))) (lambda (P1 P2)(<(car P1)(car P2))))
 
 
-(caddr (rotate90 img))
+;(caddr (rotate90 img))
 
 
 (define (cambiarCoord L1 img)
@@ -410,17 +546,43 @@ img3
 
 (define L7 '((0 0)(2 1)(1 1)(0 1)))
 (sort L7 (lambda(P1 P2)(<(car P1)(car P2))))
-(define L8 (caddr(rotate90 img)))
+;(define L8 (caddr(rotate90 img)))
 
 
 (define (setNewCoord L img)
   (list L img))
 
-(define L9 (setNewCoord L1 L8))
+;(define (invertColorBit img)
+  ;(;list (image->getWidth img) (image->getHeight img ) (image->getPix img))
 
 
 
+(define (ff L)
+  (if(null? L)
+     L
+     (cons(append(cons (car(reverse (car L))) (cdr(cdr(car L))))(list(car(cdr(car L))))) (ff (cdr L)))))
 
+
+(define (juntarBit c L)
+  (if(null? L)
+     L
+     (cons(cons (car c)(car L))(juntarBit (cdr c)(cdr L)))))
+
+(cons (map car (reverse(reverse(ff (caddr img)))))(juntarBit (generateCoord 2 3 0 0 '()) (ff (caddr img))))
+
+
+(define (arr L v)
+  (if(null? L)
+     L
+     (cons(cons (car v)(cdr(cdr(reverse(car L)))))(arr (cdr L)(cdr v)))))
      
+(define (lolll L)
+  (if(null? L)
+     L
+     (cons(reverse (car L))(lolll (cdr L)))))
+
+;(map car (reverse(car(juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img))))))
 
 
+;(map car (lolll (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))))
+;(lolll(arr (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))(map car (lolll (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))))))
