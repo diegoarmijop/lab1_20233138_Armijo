@@ -42,7 +42,7 @@
 ;Funcion que valida si los argumentos entregados corresponden a un TDAimage.
 ;Dominio: width x height x pix.
 ;Recorrido: boolean.
-;Tipo de recursion: No aplica.
+;Tipo de recursion: cola.
 (define (image? width height pix)
 
   ;Definicion de una condicion para ordenar una lista de coord.
@@ -190,6 +190,8 @@
   )
 )
 
+;Funcion que setea coordenadas.
+;Tipo de recursion: cola.
 (define (setCoord L img listAux)
   (if(null? img)
      (reverse listAux)
@@ -311,6 +313,7 @@
 ;Funcion que recorta una imagen segun un parametro.
 ;Dominio: image x int x int x int x int.
 ;Recorrido: image.
+;Tipo de recursion: Cola.
 (define (crop img x y z w)
 
   (define (findWidth L count)
@@ -446,6 +449,7 @@
 ;Funcion que muestra el histograma de bit.
 ;Dom: img.
 ;Rec: histogram bit.
+;Recursion de cola.
 (define (histogram img)
   
   (define (histogrambit lista count aux n)
