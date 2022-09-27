@@ -6,6 +6,15 @@
 
   ;Funcion que verifica que el numeros hexadecimal que entrega el usuario exista.
   (define (verificarHex hex)
+  
+  (if(pixhex-d? x y hex d)
+     (list (list x y) hex d "pixhex-d")
+     (raise "No es un pixhex-d")
+    )
+  )
+
+(define (pixhex-d? x y hex d)
+
   (if(equal? (substring hex 0 1) "#")
      (if(or(or(equal?(substring hex 1 2)"A")
               (equal?(substring hex 1 2)"B")
@@ -51,6 +60,7 @@
            #f)
         #f)
      #f))
+  
   (if
      (and
       (and(number? x)
@@ -64,12 +74,11 @@
           (equal?(verificarHex hex)#t))
       (and(number? d)
           (>= d 0)))
-     (list (list x y) hex d "pixhex-d")
-     (raise "No es un pixhex-d")
-    )
-  )
+     #t
+     #f))
+  
 
 
-(define hex (pixhex-d 0 1 "#FF9910" 10))
-hex
+;(define hex (pixhex-d 0 1 "#FF9910" 10))
+;hex
 

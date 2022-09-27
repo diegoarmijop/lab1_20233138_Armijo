@@ -1,0 +1,24 @@
+Nombre: Diego Armijo Palominos 
+LABORATORIO 1 - PARADIGMAS DE PROGRAMACION. 
+
+Requerimientos Funcionales	   Evaluación
+TDAs					0.75
+Constructor				1	
+Bitmap?					1
+Pixmap?					1
+Hexmap?					1
+Compressed?				1	
+flipH					1
+flipV					1
+crop				        1
+imgRGB->imgHex				1
+histogram				0.25
+Rotate90				1	
+Compress				0
+Edit					0
+invertColorBit				1
+inverColorRGB				0
+adjustChannel				0
+Image->string				0
+depthLayers				0
+decompress				0

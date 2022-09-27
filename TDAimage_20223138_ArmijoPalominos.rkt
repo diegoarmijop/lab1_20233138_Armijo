@@ -1,9 +1,10 @@
 #lang racket
 
 ;Se importan todas las funciones de los otros TDAs. (pixbit-d, pixrgb-d, pixhex-d). 
-(require "TDApixbit-d.rkt") 
-(require "TDApixrgb-d.rkt")
-(require "TDApixhex-d.rkt")
+(require "TDApixbit-d_20223138_ArmijoPalominos.rkt") 
+(require "TDApixrgb-d_20223138_ArmijoPalominos.rkt")
+(require "TDApixhex-d_20223138_ArmijoPalominos.rkt")
+(provide (all-defined-out))
 
 ;-------------------------------- PARÁMETROS --------------------------------
 
@@ -44,6 +45,9 @@
 ;Tipo de recursion: No aplica.
 (define (image? width height pix)
 
+  ;Definicion de una condicion para ordenar una lista de coord.
+  ;Dom: pix x pix
+  ;Rec: No tiene.
    (define verifyOrder
     (lambda (P1 P2)
       (if(=(car(car P1))(car(car P2)))
@@ -439,223 +443,24 @@
 
 
 
-
+;Funcion que muestra el histograma de bit.
+;Dom: img.
+;Rec: histogram bit.
+(define (histogram img)
   
-;(define (preFlipVk L lista count aux)
-  ;(if(null? L)
-     ;(cons aux lista)
-     ;(if(= count (car(car(car L))))
-        ;(preFlipVk (cdr L) lista count (reverse(cons (car L) aux)))
-        ;(preFlipVk (cdr L) (reverse(cons aux lista)) (+ count 1) (cons (car L)'())))))
-
-
-
-;(define (xddd img)
-  ;(car(car(car img))))
-
-;(define ex '(((1 0)(1 1))((0 0)(0 1))))
-;(define ex2'((1 0)(1 1)(0 0)(0 1)))
-;(define L1 '((0 0)(0 1)(1 0)(1 1)(2 0)(2 1)))
-
-
-
-;(define (lol L  aux)
-  ;(if(null? L)
-     ;(cons  L aux)
-     ;(lol (cons(cdr(car L))(cdr L)) (cons(car(car L)) aux ))))
-
-
-;(define (verificar list num)
-  ;(if(=(car(car(car list)))num)
-     ;#t
-     ;#f))
-
-
-;(define (loll img)
-  ;(car(list(car img))))
-
-
-
-
-;(define (hola ex)
-  ;(car ex))
-;(define ss(map hola ex))
-
-;(define (inter L)
-  ;(list ))     
-
-
-;(define (lol lista aux)
-  ;(if(null? lista)
-     ;(cons aux lista)
-     ;(if(null?(car lista))
-        ;(cons(map hola lista)aux)
-        ;(lol (cons(cdr(car lista))(list(cdr(car(cdr lista))))) (map hola lista)))))
-
-
-
-;(define (prerotate90 L count))
-
-
-
-(define img (image 2 3 (pixbit-d 0 0 0 10)(pixbit-d 0 1 0 10)(pixbit-d 1 0 1 30)(pixbit-d 1 1 1 50)
-                   (pixbit-d 2 0 0 50)(pixbit-d 2 1 0 50))) 
-(define img2 (image 3 3 (pixrgb-d 0 0 67 30 69 10)(pixrgb-d 0 1 67 30 69 20)(pixrgb-d 0 2 15 80 55 30)
-                    (pixrgb-d 1 0 90 32 60 10)(pixrgb-d 1 1 90 32 60 10)(pixrgb-d 1 2 90 32 60 10)
-                    (pixrgb-d 2 0 90 32 60 10)(pixrgb-d 2 1 90 32 60 10)(pixrgb-d 2 2 90 32 60 10)))
-(define img3 (image 2 2 (pixhex-d 0 0 "#FF0011" 10)(pixhex-d 0 1 "#FF0011" 10)(pixhex-d 1 0 "#FF0011" 10)(pixhex-d 1 1 "#FF0011" 10)))
- ;img
-;img2
-;img3
-
-;(define (image->getCoord img)
-  ;(car(car(caddr img))))
-;(image->getCoord img2)
-;(define (oi img)
-  ;(car img))
-
-
-
-
-
-
-
-
-
-
-;(define mapearCoord )
-
-
-
-
-
-
-
-
-
-;(define (obtenerListaPix img)
-  ;(map loll (caddr img)))
-
-
-
-
-;(define ouu (map setNewPix (caddr img2)))
-
-
-
-
-
-
-
-
-
-
-;(car(caddr img2))
-
-;(filter (lambda(P1)(>= (cadr P1)0))(filter (lambda(P1 )(>=(car P1)1)) L1))
-
-;(0 1)(1 2)
-
-;(define (pre-crop L x y z w)
- ;(filter (lambda (P1)(and(>=(cadr(car P1))y)(<=(cadr (car P1))w)))
-         ;(filter (lambda(P1)(and(>=(car (car P1))x)(<=(car (car P1))z))) (caddr L)))
-;)
-
-
-
-
-
-
-
-
-
-
-;(define (crop L x y z w)
-;(filter (lambda (P1)(and(>=(cadr P1)y)(<=(cadr P1)w)))(filter (lambda(P1)(and(>=(car P1)x)(<= (car P1)z))) L)))
-
-;(caddr img)
-;(caddr img)
-
-;(define (histogrambit lista count aux)
-  ;(if(null? lista)
-     ;lista
-
-(define (histogrambit lista count aux n)
+  (define (histogrambit lista count aux n)
   (if(= count n)
      (reverse aux)
      (histogrambit (cdr lista)(+ count 1) (cons(append (list count) (list(length(sort(map caddr(filter (lambda(e)(= (cadr e) count)) (caddr img))) <))))aux)n)))
+  
+  (if(bitmap? img)
+     (histogrambit (image->getPix img) 0 '() 2)
+     (raise "Aun no se implementa para otro tipo de pix")))
+        
+        
+      
+        
 
 
 
-;(define (historgb lista count aux n)
- ; (if(= count n)
-     ;(reverse aux)
-     ;(histo)
-;(crop L1 1 0 2 1)
-;'((1 0) (1 1) (2 0) (2 1))
-;(list
-;(cons "R" (list (length (sort(map rgb->getR (caddr img2)) <)) (sort(map rgb->getR (caddr img2)) <)))
-;(cons "G" (list (length (sort(map rgb->getG (caddr img2)) <)) (sort(map rgb->getR (caddr img2)) <)))
-;(cons "B" (sort(map rgb->getB (caddr img2)) <)))
-
-;(sort (map rgb->getRGB (caddr img2)) (lambda(P1 P2)(<(car P1)(car P2))))
-;(map rgb->getRGB (caddr img2))
-;(car(car (map rgb->getRGB (caddr img2))))
-;(car(cadr (map rgb->getRGB (caddr img2))))
-
-;(define (rgbok L count)
- ; (if(null? L)
-    ; count
-   ;  (if(=(car(car L))(car(cadr L)))
-       ; (if(=(cadr(car L))(cadr(cadr L)))
-          ; (if(=(caddr(cadr L))(caddr(cadr L)))
-              ;(rgbok (cdr L) (+ count 1))
-             ; count)
-           ;count)
-        ;count)
-     ;)
- ; )
-
-;(define xdddd '(0 6))
-;(map xdddd (car(car(caddr img))))
-
-
-;(define (veriok L)
-  ;(if(and(filter (lambda(e)(= (car e) (rgb->getR e)))(map rgb->getRGB (caddr img2)))
-        ;(filter (lambda(e)(= (cadr e) 30))(map rgb->getRGB (caddr img2)))
-         ;(filter (lambda(e)(= (caddr e) 69))(map rgb->getRGB (caddr img2))))#t
-                                                                            ;#f))
-     
-;(filter (lambda(e)(= (car e) (rgb->getR )))(map rgb->getRGB (caddr img2)))
-
-;(define (histogrambit lista count aux n)
-  ;(if(= count n)
-     ;(reverse aux)
-     ;(histogrambit (cdr lista)(+ count 1) (cons(list (map cadr (filter (lambda(e)(= (cadr e) count)) (caddr img))) (map caddr(filter (lambda(e)(= (cadr e) count)) (caddr img))))aux) n))) 
-     
-;(list (map cadr (filter (lambda(e)(= (cadr e) 1)) (caddr img))) (map caddr(filter (lambda(e)(= (cadr e) 1)) (caddr img))))
-;(define (contador L)
-;(filter (lambda (e)(= e 120)) L))
-;(define (recu L count)
-;(=(length L)1)
-;(+ count 1)
-;(recu (cdr L)(+ count 1)))         
-;(define (reu x)
-;(filter (lambda (P1)(=(car L1)(rgb->getR x)))(map rgb->getRGB (caddr img2))))
-;(sort (map car (caddr(rotate90 img2))) (lambda (P1 P2)(<(car P1)(car P2))))
-;(caddr (rotate90 img))
-;(define (cambiarCoord L1 img) ;(list (car L1) img))
-;(map cambiarCoord (caddr img))
-;holajean L newElement
-;(append (car newElement) (cdr L))
-;(define L7 '((0 0)(2 1)(1 1)(0 1)))
-;(sort L7 (lambda(P1 P2)(<(car P1)(car P2))))
-;(define L8 (caddr(rotate90 img)))
-;(define (setNewCoord L img)
-  ;(list L img))
-;(define (invertColorBit img)
-  ;(;list (image->getWidth img) (image->getHeight img ) (image->getPix img))
-;(;cons (map car (reverse(reverse(agregarBitOpuesto (caddr img)))))(juntarBit (generateCoord 2 3 0 0 '()) (agregarBitOpuesto (caddr img))))
-;(map car (reverse(car(juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img))))))
-;(map car (lolll (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))))
-;(lolll(arr (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))(map car (lolll (juntarBit (lista-coordenadas 2 3 0 0 '()) (ff (caddr img)))))))
+;(cons (length(hola (cddr(cdr(sort  (map rgb->getRGB (caddr img2)) ou))))) (car (cdddr(sort  (map rgb->getRGB (caddr img2)) ou))))
